@@ -1,0 +1,28 @@
+[project]
+name = "42-rag-against-the-machines"
+version = "2.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Semere M. Mebrahtom", email = "semere.meharena1@gmail.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "fire>=0.7.1",
+    "numpy>=2.2.6",
+    "pydantic>=2.14.2",
+    "scipy>=1.15.3",
+    "torch>=2.14.1",
+    "tqdm>=4.70.1",
+    "transformers>=5.20.2",
+]
+
+[dependency-groups]
+dev = [
+    "flake8>=7.4.1",
+    "mypy>=2.4.1",
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+    "ty>=0.0.95",
+]
+
