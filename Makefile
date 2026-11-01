@@ -14,8 +14,11 @@ $(SYNC): pyproject.toml
 	fi
 	@touch $(SYNC)
 
-run: install
+index: install
 	uv run python -m src index
+
+
+run: index
 	
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +

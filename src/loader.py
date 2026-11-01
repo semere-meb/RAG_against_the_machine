@@ -1,12 +1,18 @@
-from enum import Enum
+from itertools import chain
 from pathlib import Path
 
 from pydantic import BaseModel
 
 RAW_DIR: str = "data/raw/vllm-0.10.1/"
 DIRS = {
-    "py": ["vllm"],
-    "md": ["", "docs"],
+    "code": {
+        "extensions": ["py"],
+        "dirs": ["vllm"],
+    },
+    "prose": {
+        "extensions": ["md"],
+        "dirs": ["", "docs"],
+    },
 }
 EXCLUDED_DIRS: set[str] = {
     ".eggs",
@@ -33,15 +39,10 @@ class LoadError(Exception):
     """
 
 
-class FileType(Enum):
-    PY = ".py"
-    MD = ".md"
-
-
 class File(BaseModel):
     path: Path
     content: str
-    type: FileType
+    suffix: str
 
 
 class Loader:
@@ -57,12 +58,19 @@ class Loader:
         paths = []
 
         for type in DIRS:
-            for sub in DIRS[type]:
+            extensions = DIRS[type]["extensions"]
+            sub_dirs = DIRS[type]["dirs"]
+
+            for sub in sub_dirs:
                 sub_dir = raw_dir / sub
-                files = list(sub_dir.rglob(f"*.{type}"))
+                files = list(
+                    chain.from_iterable(
+                        sub_dir.rglob(f"*.{extension}")
+                        for extension in extensions
+                    )
+                )
                 paths += files
 
-        paths.sort()
         return paths
 
     def filter_sort_paths(self, paths: list[Path]) -> list[Path]:
@@ -80,6 +88,7 @@ class Loader:
 
             filtered_paths.append(path)
 
+        paths.sort()
         return filtered_paths
 
     def build_file_list(self, paths: list[Path]) -> list[File]:
@@ -92,9 +101,8 @@ class Loader:
             try:
                 with open(path, encoding="utf-8", newline="") as f:
                     content = f.read()
-                    type = FileType(path.suffix)
-
-                    file = File(path=path, content=content, type=type)
+                    suffix = path.suffix
+                    file = File(path=path, content=content, suffix=suffix)
                     files.append(file)
             except OSError:
                 print(f"Warning: Error during reading {path}, skipped.")
