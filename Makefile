@@ -4,6 +4,7 @@ MYPY_FLAGS := "--warn-return-any --warn-unused-ignores --ignore-missing-imports 
 install: $(SYNC)
 
 $(SYNC): pyproject.toml
+	git config core.hooksPath .githooks
 	@if ! command -v uv >/dev/null;then \
 		pip install uv; \
 	fi
