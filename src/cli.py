@@ -1,9 +1,16 @@
+from src.loader import Loader
+
+
 class CLI:
     def index(
         self,
         max_chunk_size: int = 2000,
     ) -> None:
-        print("index: not implemented.")
+        indexer = Loader()
+        paths = indexer.get_all_paths()
+        filter_paths = indexer.filter_sort_paths(paths)
+        files = indexer.build_file_list(filter_paths)
+        print(len(files))
 
     def search(
         self,
