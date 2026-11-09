@@ -67,10 +67,21 @@ class Chunker:
             assert text[start:end] == doc.page_content
             chunks.append(
                 MinimalSource(
+                    text=content,
                     file_path=str(file.path),
                     first_character_index=start,
                     last_character_index=end,
                 )
             )
+
+        return chunks
+
+    def chunk(
+        self, files: list[File], max_chunk_size: int
+    ) -> list[MinimalSource]:
+        chunks: list[MinimalSource] = []
+
+        for file in files:
+            chunks.extend(self.chunk_file(file, max_chunk_size))
 
         return chunks

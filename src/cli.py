@@ -1,5 +1,6 @@
 from src.chunker import Chunker
 from src.loader import Loader
+from src.tokenizer import Tokenizer
 
 
 class CLI:
@@ -7,16 +8,9 @@ class CLI:
         self,
         max_chunk_size: int = 2000,
     ) -> None:
-        indexer = Loader()
-        paths = indexer.get_all_paths()
-        filter_paths = indexer.filter_sort_paths(paths)
-        files = indexer.build_file_list(filter_paths)
-
-        file = [file for file in files if file.suffix == ".md"][10]
-
-        chunker = Chunker(max_chunk_size=2000)
-        for c in chunker.chunk_file(file):
-            print(c.first_character_index, c.last_character_index)
+        files = Loader().load()
+        chunks = Chunker().chunk(files, max_chunk_size)
+        Tokenizer().index(chunks)
 
     def search(
         self,

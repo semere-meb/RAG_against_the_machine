@@ -1,6 +1,10 @@
 import re
 from typing import List
 
+import bm25q
+
+from src.models import MinimalSource
+
 
 class Tokenizer:
     def __init__(self, lowercase: bool = True) -> None:
@@ -45,3 +49,13 @@ class Tokenizer:
             all_tokens.extend(sub_tokens)
 
         return all_tokens
+
+    def index(self, chunks: list[MinimalSource]) -> None:
+
+        corpus = [chunk.text for chunk in chunks]
+        corpus_tokens = [self.tokenize(text) for text in corpus]
+
+        ret = bm25q.BM25(corpus=corpus, backend="numba")
+        ret.index(corpus_tokens)
+
+        ret.save(save_dir="data/processed", corpus=corpus, allow_pickle=True)

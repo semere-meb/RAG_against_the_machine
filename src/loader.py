@@ -108,3 +108,10 @@ class Loader:
                 print(f"Warning: Error during reading {path}, skipped.")
 
         return files
+
+    def load(self) -> list[File]:
+        paths = self.get_all_paths()
+        filter_paths = self.filter_sort_paths(paths)
+        files = self.build_file_list(filter_paths)
+
+        return files
