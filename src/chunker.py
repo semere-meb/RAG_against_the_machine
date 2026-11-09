@@ -9,8 +9,8 @@ from src.models import MinimalSource
 
 class Chunker:
     def __init__(self, max_chunk_size: int = 2000) -> None:
+        self.max_chunk_size = max_chunk_size
         self.text_separators: list[str] = [
-            # r"\n(?=#{1,6}[ \t])",
             r"\n[ \t]*\n",
             r"\n",
             r"(?<=[.!?])\s+",
@@ -18,8 +18,8 @@ class Chunker:
         ]
 
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=2000,
-            chunk_overlap=max_chunk_size // 10,
+            chunk_size=self.max_chunk_size,
+            chunk_overlap=self.max_chunk_size // 10,
             separators=self.text_separators,
             is_separator_regex=True,
             add_start_index=True,
@@ -27,13 +27,15 @@ class Chunker:
 
         self.markdown_splitter = RecursiveCharacterTextSplitter.from_language(
             language=Language.MARKDOWN,
-            chunk_overlap=max_chunk_size // 10,
+            chunk_size=self.max_chunk_size,
+            chunk_overlap=self.max_chunk_size // 10,
             add_start_index=True,
         )
 
         self.python_splitter = RecursiveCharacterTextSplitter.from_language(
             language=Language.PYTHON,
-            chunk_overlap=max_chunk_size // 10,
+            chunk_size=self.max_chunk_size,
+            chunk_overlap=self.max_chunk_size // 10,
             add_start_index=True,
         )
 
@@ -50,9 +52,9 @@ class Chunker:
 
         if file.suffix in (".py", ".pyi", ".pyd"):
             splitter = self.python_splitter
-        elif file.suffix in (".md"):
+        elif file.suffix in (".md",):
             splitter = self.markdown_splitter
-        elif file.suffix in (".txt"):
+        else:
             splitter = self.text_splitter
 
         docs = splitter.create_documents([text])
