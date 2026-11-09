@@ -1,3 +1,4 @@
+from src.chunker import Chunker
 from src.loader import Loader
 
 
@@ -10,7 +11,12 @@ class CLI:
         paths = indexer.get_all_paths()
         filter_paths = indexer.filter_sort_paths(paths)
         files = indexer.build_file_list(filter_paths)
-        print(len(files))
+
+        file = [file for file in files if file.suffix == ".md"][10]
+
+        chunker = Chunker(max_chunk_size=2000)
+        for c in chunker.chunk_file(file):
+            print(c.first_character_index, c.last_character_index)
 
     def search(
         self,

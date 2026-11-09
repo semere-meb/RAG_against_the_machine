@@ -225,3 +225,10 @@ data/processed
 data/output
 .synced
 rsrc
+.python-version
+.flake8
+.githooks
+.github
+LICENSE
+
+t.txt
