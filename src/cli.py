@@ -1,6 +1,6 @@
-from src.chunker import Chunker
+from src.index.chunker import Chunker
+from src.index.indexer import Indexer
 from src.loader import Loader
-from src.tokenizer import Tokenizer
 
 
 class CLI:
@@ -10,7 +10,8 @@ class CLI:
     ) -> None:
         files = Loader().load()
         chunks = Chunker().chunk(files, max_chunk_size)
-        Tokenizer().index(chunks)
+        indexer = Indexer()
+        indexer.save(chunks)
 
     def search(
         self,
@@ -18,7 +19,7 @@ class CLI:
         k: int,
     ) -> None:
         query = str(query)
-        print("search: not implemented.")
+        # print("search: not implemented.")
 
     def search_dataset(
         self,
