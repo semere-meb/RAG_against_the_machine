@@ -1,25 +1,17 @@
-from src.index.chunker import Chunker
 from src.index.indexer import Indexer
-from src.loader import Loader
+from src.searcher import Searcher
 
 
 class CLI:
-    def index(
-        self,
-        max_chunk_size: int = 2000,
-    ) -> None:
-        files = Loader().load()
-        chunks = Chunker().chunk(files, max_chunk_size)
+    def index(self, max_chunk_size: int = 2000) -> None:
         indexer = Indexer()
-        indexer.save(chunks)
+        indexer.save(max_chunk_size)
 
-    def search(
-        self,
-        query: str,
-        k: int,
-    ) -> None:
+    def search(self, query: str, k: int) -> None:
         query = str(query)
-        # print("search: not implemented.")
+        searcher = Searcher()
+
+        searcher.search(query, k)
 
     def search_dataset(
         self,

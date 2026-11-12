@@ -1,23 +1,27 @@
 from bm25q import BM25
 
+from src.index.chunker import Chunker
 from src.index.tokenizer import Tokenizer
-from src.models import MinimalSource
+from src.loader import Loader
 
 
 class Indexer:
     def __init__(self) -> None:
         self.tokenizer = Tokenizer()
-        self.retriever = BM25(backend="numba")
 
-    def save(self, chunks: list[MinimalSource]) -> None:
+    def save(self, max_chunk_size: int) -> None:
+        files = Loader().load()
 
-        corpus = [chunk.text for chunk in chunks]
-        corpus_tokens = [self.tokenizer.tokenize(text) for text in corpus]
+        chunks = Chunker().chunk(files, max_chunk_size)
 
-        self.retriever.corpus = corpus
+        corpus_tokens = [
+            self.tokenizer.tokenize(chunk.text) for chunk in chunks
+        ]
 
-        self.retriever.index(corpus_tokens)
+        retriever = BM25(backend="numba", corpus=chunks)
 
-        self.retriever.save(
-            save_dir="data/processed", corpus=corpus, allow_pickle=True
+        retriever.index(corpus_tokens)
+
+        retriever.save(
+            save_dir="data/processed", corpus=chunks, allow_pickle=True
         )
