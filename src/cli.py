@@ -1,3 +1,4 @@
+from src.answer import Answerer
 from src.index.indexer import Indexer
 from src.searcher import Searcher
 
@@ -28,17 +29,14 @@ class CLI:
         searcher = Searcher()
         searcher.search_dataset(dataset_path, k, save_direcotry)
 
-    def answer(
-        self,
-        query: str,
-        k: int,
-    ) -> None:
-        print("answer: not implemented.")
+    def answer(self, query: str, k: int) -> None:
+        print(">>> Answering")
+        answerer = Answerer()
+        result = answerer.answer(query, k)
+        print(result.answer)
 
     def answer_dataset(
-        self,
-        student_search_results_path: str,
-        save_direcotry: str,
+        self, student_search_results_path: str, save_direcotry: str
     ) -> None:
         print("answer_dataset: not implemented.")
 

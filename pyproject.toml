@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.10"
 dependencies = [
+    "accelerate>=1.15.0",
     "bm25q[core]>=0.0.1",
     "fire>=0.7.1",
     "langchain-text-splitters>=1.1.3",
