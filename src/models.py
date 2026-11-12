@@ -10,7 +10,6 @@ class MinimalSource(BaseModel):
     """
 
     file_path: str
-    text: str
     first_character_index: int
     last_character_index: int
 
@@ -75,3 +74,10 @@ class StudentSearchResultsAndAnswer(BaseModel):
 
     search_results: List[MinimalAnswer]
     k: int
+
+
+class Chunk(BaseModel):
+    file_path: str
+    text: str
+    first_character_index: int
+    last_character_index: int

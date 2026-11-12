@@ -4,7 +4,7 @@ from langchain_text_splitters import (
 )
 
 from src.loader import File
-from src.models import MinimalSource
+from src.models import Chunk
 
 
 class Chunker:
@@ -41,14 +41,14 @@ class Chunker:
 
     def chunk_file(
         self, file: File, max_chunk_size: int = 2000
-    ) -> list[MinimalSource]:
+    ) -> list[Chunk]:
         text = file.content
         if max_chunk_size <= 0:
             raise ValueError("max_chunk_size must be a positive integer")
         if not text:
             return []
 
-        chunks: list[MinimalSource] = []
+        chunks: list[Chunk] = []
 
         if file.suffix in (".py", ".pyi", ".pyd"):
             splitter = self.python_splitter
@@ -66,7 +66,7 @@ class Chunker:
             # print(len(content))
             assert text[start:end] == doc.page_content
             chunks.append(
-                MinimalSource(
+                Chunk(
                     text=content,
                     file_path=str(file.path),
                     first_character_index=start,
@@ -76,10 +76,8 @@ class Chunker:
 
         return chunks
 
-    def chunk(
-        self, files: list[File], max_chunk_size: int
-    ) -> list[MinimalSource]:
-        chunks: list[MinimalSource] = []
+    def chunk(self, files: list[File], max_chunk_size: int) -> list[Chunk]:
+        chunks: list[Chunk] = []
 
         for file in files:
             chunks.extend(self.chunk_file(file, max_chunk_size))

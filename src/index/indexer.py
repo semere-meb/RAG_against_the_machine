@@ -11,17 +11,16 @@ class Indexer:
 
     def save(self, max_chunk_size: int) -> None:
         files = Loader().load()
-
         chunks = Chunker().chunk(files, max_chunk_size)
 
+        corpus_texts = [chunk.text for chunk in chunks]
         corpus_tokens = [
-            self.tokenizer.tokenize(chunk.text) for chunk in chunks
+            self.tokenizer.tokenize(text) for text in corpus_texts
         ]
 
-        retriever = BM25(backend="numba", corpus=chunks)
-
+        retriever = BM25(backend="numba")
         retriever.index(corpus_tokens)
-
         retriever.save(
-            save_dir="data/processed", corpus=chunks, allow_pickle=True
+            save_dir="data/processed",
+            corpus=[chunk.model_dump() for chunk in chunks],
         )
