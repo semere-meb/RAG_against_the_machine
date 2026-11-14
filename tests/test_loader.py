@@ -17,7 +17,7 @@ def test_indexer_loader_and_offsets() -> None:
     assert len(files) > 0
 
     for file_obj in files:
-        rel_path = file_obj.path.relative_to(Path.cwd()).as_posix()
+        rel_path = file_obj.path.as_posix()
         assert rel_path.startswith("data/raw/")
         assert "\\" not in rel_path
         assert isinstance(file_obj.content, str)

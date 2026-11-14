@@ -50,7 +50,7 @@ class Loader:
         """
         Walks through the entire repo and returns paths of files.
         """
-        raw_dir: Path = Path(RAW_DIR).absolute()
+        raw_dir: Path = Path(RAW_DIR)
 
         if not (raw_dir.exists() and raw_dir.is_dir()):
             raise LoadError("raw directory not found")
