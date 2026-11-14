@@ -23,11 +23,11 @@ class CLI:
             )
 
     def search_dataset(
-        self, dataset_path: str, k: int, save_direcotry: str
+        self, dataset_path: str, k: int, save_directory: str
     ) -> None:
         print(">>> Searching using the dataset")
         searcher = Searcher()
-        searcher.search_dataset(dataset_path, k, save_direcotry)
+        searcher.search_dataset(dataset_path, k, save_directory)
 
     def answer(self, query: str, k: int) -> None:
         print(">>> Answering")
@@ -36,11 +36,11 @@ class CLI:
         print(result.answer)
 
     def answer_dataset(
-        self, student_search_results_path: str, save_direcotry: str
+        self, student_search_results_path: str, save_directory: str
     ) -> None:
         print(">>> answering using the dataset")
         answerer = Answerer()
-        answerer.answer_dataset(student_search_results_path, save_direcotry)
+        answerer.answer_dataset(student_search_results_path, save_directory)
 
     def evaluate(
         self,

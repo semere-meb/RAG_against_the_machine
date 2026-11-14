@@ -90,7 +90,7 @@ class Answerer:
         )
 
     def answer_dataset(
-        self, student_search_results_path: str, save_direcotry: str
+        self, student_search_results_path: str, save_directory: str
     ) -> StudentSearchResultsAndAnswer:
 
         search_results = []
@@ -114,7 +114,7 @@ class Answerer:
         )
 
         try:
-            out_dir = Path(save_direcotry)
+            out_dir = Path(save_directory)
             out_dir.mkdir(parents=True, exist_ok=True)
 
             with open(out_dir / "answer_dataset.json", "w") as f:

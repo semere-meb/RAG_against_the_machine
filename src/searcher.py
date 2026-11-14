@@ -29,13 +29,13 @@ class Searcher:
         self.retriever = self.load()
 
         query_tokens = self.tokenizer.tokenize(query)
-        docs, scores = self.retriever.retrieve([query_tokens], k=k)
+        docs, _scores = self.retriever.retrieve([query_tokens], k=k)
         sources = [MinimalSource.model_validate(d) for d in docs[0]]
 
         return MinimalSearchResults(question=query, retrieved_sources=sources)
 
     def search_dataset(
-        self, dataset_path: str, k: int, save_direcotry: str
+        self, dataset_path: str, k: int, save_directory: str
     ) -> StudentSearchResults:
         search_results = []
 
@@ -57,7 +57,7 @@ class Searcher:
         )
 
         try:
-            out_dir = Path(save_direcotry)
+            out_dir = Path(save_directory)
             out_dir.mkdir(parents=True, exist_ok=True)
 
             with open(out_dir / "search_dataset.json", "w") as f:
