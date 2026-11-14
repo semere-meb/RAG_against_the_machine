@@ -50,11 +50,14 @@ class Searcher:
 
         for question in questions:
             result = self.search(question.question, k=k)
-            search_results.append(result)
+            search_result = MinimalSearchResults(
+                question_id=question.question_id,
+                question=question.question,
+                retrieved_sources=result.retrieved_sources,
+            )
+            search_results.append(search_result)
 
-        ret = StudentSearchResults(
-            search_results=search_results, k=len(dataset.rag_questions)
-        )
+        ret = StudentSearchResults(search_results=search_results, k=k)
 
         try:
             out_dir = Path(save_directory)
