@@ -1,8 +1,15 @@
+import json
+from pathlib import Path
 from string import Template
 
+from pydantic import ValidationError
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from src.models import AnsweredQuestion
+from src.models import (
+    MinimalAnswer,
+    StudentSearchResults,
+    StudentSearchResultsAndAnswer,
+)
 from src.searcher import Searcher
 
 
@@ -29,7 +36,7 @@ class Answerer:
         """
         )
 
-    def answer(self, query: str, k: int) -> AnsweredQuestion:
+    def answer(self, query: str, k: int) -> MinimalAnswer:
         result = Searcher().search(query, k)
         context = []
 
@@ -75,9 +82,44 @@ class Answerer:
             new_tokens, skip_special_tokens=True
         )
 
-        return AnsweredQuestion(
+        return MinimalAnswer(
             question_id=result.question_id,
             question=result.question,
-            sources=result.retrieved_sources,
+            retrieved_sources=result.retrieved_sources,
             answer=str(llm_answer),
         )
+
+    def answer_dataset(
+        self, student_search_results_path: str, save_direcotry: str
+    ) -> StudentSearchResultsAndAnswer:
+
+        search_results = []
+
+        try:
+            with open(student_search_results_path) as f:
+                raw = json.load(f)
+            dataset = StudentSearchResults.model_validate(raw)
+        except (OSError, ValidationError) as e:
+            raise AnswerError("Error reading the input dataset.") from e
+
+        s_results, k = dataset.search_results, dataset.k
+
+        for s_result in s_results:
+            answer = self.answer(s_result.question, k=k)
+            search_results.append(answer)
+
+        ret = StudentSearchResultsAndAnswer(
+            search_results=search_results,
+            k=k,
+        )
+
+        try:
+            out_dir = Path(save_direcotry)
+            out_dir.mkdir(parents=True, exist_ok=True)
+
+            with open(out_dir / "answer_dataset.json", "w") as f:
+                f.write(ret.model_dump_json(indent=2))
+        except OSError as e:
+            raise AnswerError("Couldn't save the output dataset.") from e
+
+        return ret

@@ -38,7 +38,9 @@ class CLI:
     def answer_dataset(
         self, student_search_results_path: str, save_direcotry: str
     ) -> None:
-        print("answer_dataset: not implemented.")
+        print(">>> answering using the dataset")
+        answerer = Answerer()
+        answerer.answer_dataset(student_search_results_path, save_direcotry)
 
     def evaluate(
         self,

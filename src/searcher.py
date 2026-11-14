@@ -1,7 +1,8 @@
 import json
-import pathlib
+from pathlib import Path
 
 from bm25q import BM25
+from pydantic import ValidationError
 
 from src.index.tokenizer import Tokenizer
 from src.models import (
@@ -10,6 +11,10 @@ from src.models import (
     RagDataset,
     StudentSearchResults,
 )
+
+
+class SearchError(Exception):
+    """"""
 
 
 class Searcher:
@@ -34,23 +39,30 @@ class Searcher:
     ) -> StudentSearchResults:
         search_results = []
 
-        with open(dataset_path) as f:
-            raw = json.load(f)
-
+        try:
+            with open(dataset_path) as f:
+                raw = json.load(f)
             dataset = RagDataset.model_validate(raw)
+        except (OSError, ValidationError) as e:
+            raise SearchError("Error reading the input dataset.") from e
 
-        for question in dataset.rag_questions:
-            result = self.search(question.question, k=5)
+        questions = dataset.rag_questions
+
+        for question in questions:
+            result = self.search(question.question, k=k)
             search_results.append(result)
 
-        results = StudentSearchResults(
+        ret = StudentSearchResults(
             search_results=search_results, k=len(dataset.rag_questions)
         )
 
-        save_dir = pathlib.Path(save_direcotry)
-        save_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            out_dir = Path(save_direcotry)
+            out_dir.mkdir(parents=True, exist_ok=True)
 
-        with open(save_dir / "search_results.json", "w") as f:
-            f.write(results.model_dump_json(indent=2))
+            with open(out_dir / "search_dataset.json", "w") as f:
+                f.write(ret.model_dump_json(indent=2))
+        except OSError as e:
+            raise SearchError("Couldn't save the output dataset.") from e
 
-        return results
+        return ret
