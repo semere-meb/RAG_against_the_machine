@@ -39,8 +39,9 @@ class Searcher:
     ) -> StudentSearchResults:
         search_results = []
 
+        input_path = Path(dataset_path)
         try:
-            with open(dataset_path) as f:
+            with open(input_path) as f:
                 raw = json.load(f)
             dataset = RagDataset.model_validate(raw)
         except (OSError, ValidationError) as e:
@@ -63,7 +64,7 @@ class Searcher:
             out_dir = Path(save_directory)
             out_dir.mkdir(parents=True, exist_ok=True)
 
-            with open(out_dir / "search_dataset.json", "w") as f:
+            with open(out_dir / input_path.name, "w") as f:
                 f.write(ret.model_dump_json(indent=2))
         except OSError as e:
             raise SearchError("Couldn't save the output dataset.") from e

@@ -92,11 +92,12 @@ class Answerer:
     def answer_dataset(
         self, student_search_results_path: str, save_directory: str
     ) -> StudentSearchResultsAndAnswer:
-
         search_results = []
 
+        input_path = Path(student_search_results_path)
+
         try:
-            with open(student_search_results_path) as f:
+            with open(input_path) as f:
                 raw = json.load(f)
             dataset = StudentSearchResults.model_validate(raw)
         except (OSError, ValidationError) as e:
@@ -117,7 +118,7 @@ class Answerer:
             out_dir = Path(save_directory)
             out_dir.mkdir(parents=True, exist_ok=True)
 
-            with open(out_dir / "answer_dataset.json", "w") as f:
+            with open(out_dir / input_path.name, "w") as f:
                 f.write(ret.model_dump_json(indent=2))
         except OSError as e:
             raise AnswerError("Couldn't save the output dataset.") from e
