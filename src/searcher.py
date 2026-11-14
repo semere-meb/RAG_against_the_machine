@@ -1,8 +1,8 @@
-import json
 from pathlib import Path
 
 from bm25q import BM25
 from pydantic import ValidationError
+from pydantic_core import PydanticSerializationError
 
 from src.index.tokenizer import Tokenizer
 from src.models import (
@@ -37,18 +37,17 @@ class Searcher:
     def search_dataset(
         self, dataset_path: str, k: int, save_directory: str
     ) -> StudentSearchResults:
-        search_results = []
-
         input_path = Path(dataset_path)
         try:
             with open(input_path) as f:
-                raw = json.load(f)
-            dataset = RagDataset.model_validate(raw)
+                raw = f.read()
+            dataset = RagDataset.model_validate_json(raw)
         except (OSError, ValidationError) as e:
-            raise SearchError("Error reading the input dataset.") from e
+            raise SearchError("Couldn't read the input dataset.") from e
 
         questions = dataset.rag_questions
 
+        search_results = []
         for question in questions:
             result = self.search(question.question, k=k)
             search_result = MinimalSearchResults(
@@ -66,7 +65,7 @@ class Searcher:
 
             with open(out_dir / input_path.name, "w") as f:
                 f.write(ret.model_dump_json(indent=2))
-        except OSError as e:
+        except (OSError, PydanticSerializationError) as e:
             raise SearchError("Couldn't save the output dataset.") from e
 
         return ret

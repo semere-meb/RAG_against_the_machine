@@ -1,8 +1,8 @@
-import json
 from pathlib import Path
 from string import Template
 
 from pydantic import ValidationError
+from pydantic_core import PydanticSerializationError
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from src.models import (
@@ -92,19 +92,17 @@ class Answerer:
     def answer_dataset(
         self, student_search_results_path: str, save_directory: str
     ) -> StudentSearchResultsAndAnswer:
-        search_results = []
-
         input_path = Path(student_search_results_path)
-
         try:
             with open(input_path) as f:
-                raw = json.load(f)
-            dataset = StudentSearchResults.model_validate(raw)
+                raw = f.read()
+            dataset = StudentSearchResults.model_validate_json(raw)
         except (OSError, ValidationError) as e:
-            raise AnswerError("Error reading the input dataset.") from e
+            raise AnswerError("Couldn't read the input dataset.") from e
 
         s_results, k = dataset.search_results, dataset.k
 
+        search_results = []
         for s_result in s_results:
             answer = self.answer(s_result.question, k=k)
             search_answer = MinimalAnswer(
@@ -126,7 +124,7 @@ class Answerer:
 
             with open(out_dir / input_path.name, "w") as f:
                 f.write(ret.model_dump_json(indent=2))
-        except OSError as e:
+        except (OSError, PydanticSerializationError) as e:
             raise AnswerError("Couldn't save the output dataset.") from e
 
         return ret

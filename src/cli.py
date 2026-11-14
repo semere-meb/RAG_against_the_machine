@@ -10,6 +10,9 @@ class CLI:
         indexer.save(max_chunk_size)
 
     def search(self, query: str, k: int) -> None:
+        if type(k) is not int or k <= 0:
+            print("k has to be a valid int type and at least 1.")
+            exit(1)
         print(">>> Searching")
         query = str(query)
         searcher = Searcher()
@@ -25,11 +28,17 @@ class CLI:
     def search_dataset(
         self, dataset_path: str, k: int, save_directory: str
     ) -> None:
+        if type(k) is not int or k <= 0:
+            print("k has to be a valid int type and at least 1.")
+            exit(1)
         print(">>> Searching using the dataset")
         searcher = Searcher()
         searcher.search_dataset(dataset_path, k, save_directory)
 
     def answer(self, query: str, k: int) -> None:
+        if type(k) is not int or k <= 0:
+            print("k has to be a valid int type and at least 1.")
+            exit(1)
         print(">>> Answering")
         answerer = Answerer()
         result = answerer.answer(query, k)
