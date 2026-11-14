@@ -107,7 +107,13 @@ class Answerer:
 
         for s_result in s_results:
             answer = self.answer(s_result.question, k=k)
-            search_results.append(answer)
+            search_answer = MinimalAnswer(
+                question_id=answer.question_id,
+                question=answer.question,
+                retrieved_sources=answer.retrieved_sources,
+                answer=answer.answer,
+            )
+            search_results.append(search_answer)
 
         ret = StudentSearchResultsAndAnswer(
             search_results=search_results,
