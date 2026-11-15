@@ -3,6 +3,7 @@ from string import Template
 
 from pydantic import ValidationError
 from pydantic_core import PydanticSerializationError
+from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from src.models import (
@@ -103,7 +104,7 @@ class Answerer:
         s_results, k = dataset.search_results, dataset.k
 
         search_results = []
-        for s_result in s_results:
+        for s_result in tqdm(s_results, "Answering"):
             answer = self.answer(s_result.question, k=k)
             search_answer = MinimalAnswer(
                 question_id=answer.question_id,

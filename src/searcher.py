@@ -3,6 +3,7 @@ from pathlib import Path
 from bm25q import BM25
 from pydantic import ValidationError
 from pydantic_core import PydanticSerializationError
+from tqdm import tqdm
 
 from src.index.tokenizer import Tokenizer
 from src.models import (
@@ -48,7 +49,7 @@ class Searcher:
         questions = dataset.rag_questions
 
         search_results = []
-        for question in questions:
+        for question in tqdm(questions, "Searching"):
             result = self.search(question.question, k=k)
             search_result = MinimalSearchResults(
                 question_id=question.question_id,
