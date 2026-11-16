@@ -1,4 +1,5 @@
 from src.answer import Answerer
+from src.evaluator import Evaluator
 from src.index.indexer import Indexer
 from src.searcher import Searcher
 
@@ -56,4 +57,8 @@ class CLI:
         student_search_results_path: str,
         dataset_path: str,
     ) -> None:
-        print("evaluate: not implemented.")
+        print(">>> Evaluating")
+        evaluator = Evaluator()
+        res = evaluator.evaluate(student_search_results_path, dataset_path)
+        for k in res:
+            print(f"recall@{k}: {res[k]:.2f}")

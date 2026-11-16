@@ -17,6 +17,10 @@ $(SYNC): pyproject.toml
 index: install
 	uv run python -m src index
 
+evaluate: install
+	uv run python -m src evaluate _answered/dataset_code_public.json data/datasets/AnsweredQuestions/dataset_code_public.json
+	uv run python -m src evaluate _answered/dataset_docs_public.json data/datasets/AnsweredQuestions/dataset_docs_public.json
+	
 
 run: index
 	
