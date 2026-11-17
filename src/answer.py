@@ -1,6 +1,7 @@
 from pathlib import Path
 from string import Template
 
+import torch
 from pydantic import ValidationError
 from pydantic_core import PydanticSerializationError
 from tqdm import tqdm
@@ -8,10 +9,13 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from src.models import (
     MinimalAnswer,
+    MinimalSource,
     StudentSearchResults,
     StudentSearchResultsAndAnswer,
 )
 from src.searcher import Searcher
+
+TOP_SOURCES_COUNT = 3
 
 
 class AnswerError(Exception):
@@ -23,7 +27,9 @@ class Answerer:
         model_name = "Qwen/Qwen3-0.6B"
         self.tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-0.6B")
         self.model = AutoModelForCausalLM.from_pretrained(
-            model_name, torch_dtype="auto", device_map="auto"
+            model_name,
+            dtype=torch.float32 if not torch.cuda.is_available() else "auto",
+            device_map="auto",
         )
 
         self.template = Template(
@@ -37,11 +43,10 @@ class Answerer:
         """
         )
 
-    def answer(self, query: str, k: int) -> MinimalAnswer:
-        result = Searcher().search(query, k)
+    def generate(self, query: str, sources: list[MinimalSource]) -> str:
         context = []
 
-        for source in result.retrieved_sources:
+        for source in sources[:TOP_SOURCES_COUNT]:
             with open(source.file_path) as f:
                 text = f.read()[
                     source.first_character_index : source.last_character_index
@@ -72,22 +77,25 @@ class Answerer:
         output = self.model.generate(
             **inputs,
             max_new_tokens=512,
-            do_sample=True,
-            temperature=0.7,
-            top_p=0.8,
-            top_k=20,
+            do_sample=False,
+            # temperature=0.7,
+            # top_p=0.8,
+            # top_k=20,
         )  # ty: ignore[invalid-argument-type]
 
         new_tokens = output[0][inputs.input_ids.shape[1] :]
         llm_answer = self.tokenizer.decode(
             new_tokens, skip_special_tokens=True
         )
+        return str(llm_answer)
 
+    def answer(self, query: str, k: int) -> MinimalAnswer:
+        result = Searcher().search(query, k)
         return MinimalAnswer(
-            question_id=result.question_id,
             question=result.question,
+            question_id=result.question_id,
             retrieved_sources=result.retrieved_sources,
-            answer=str(llm_answer),
+            answer=self.generate(result.question, result.retrieved_sources),
         )
 
     def answer_dataset(
@@ -105,12 +113,13 @@ class Answerer:
 
         search_results = []
         for s_result in tqdm(s_results, "Answering"):
-            answer = self.answer(s_result.question, k=k)
             search_answer = MinimalAnswer(
-                question_id=answer.question_id,
-                question=answer.question,
-                retrieved_sources=answer.retrieved_sources,
-                answer=answer.answer,
+                question_id=s_result.question_id,
+                question=s_result.question,
+                retrieved_sources=s_result.retrieved_sources,
+                answer=self.generate(
+                    s_result.question, s_result.retrieved_sources
+                ),
             )
             search_results.append(search_answer)
 
