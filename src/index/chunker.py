@@ -39,12 +39,8 @@ class Chunker:
             add_start_index=True,
         )
 
-    def chunk_file(
-        self, file: File, max_chunk_size: int = 2000
-    ) -> list[Chunk]:
+    def chunk_file(self, file: File) -> list[Chunk]:
         text = file.content
-        if max_chunk_size <= 0:
-            raise ValueError("max_chunk_size must be a positive integer")
         if not text:
             return []
 
@@ -76,10 +72,10 @@ class Chunker:
 
         return chunks
 
-    def chunk(self, files: list[File], max_chunk_size: int) -> list[Chunk]:
+    def chunk(self, files: list[File]) -> list[Chunk]:
         chunks: list[Chunk] = []
 
         for file in files:
-            chunks.extend(self.chunk_file(file, max_chunk_size))
+            chunks.extend(self.chunk_file(file))
 
         return chunks

@@ -7,6 +7,13 @@ from src.searcher import Searcher
 class CLI:
     def index(self, max_chunk_size: int = 2000) -> None:
         print(">>> Indexing")
+        if (
+            type(max_chunk_size) is not int
+            or max_chunk_size <= 0
+            or max_chunk_size > 2000
+        ):
+            print("--max-chunk-size must be an integer between 1 - 2000")
+            return
         indexer = Indexer()
         indexer.save(max_chunk_size)
 

@@ -15,7 +15,7 @@ class Indexer:
 
     def save(self, max_chunk_size: int) -> None:
         files = Loader().load()
-        chunks = Chunker().chunk(files, max_chunk_size)
+        chunks = Chunker(max_chunk_size).chunk(files)
 
         corpus_tokens = [
             self.tokenizer.tokenize(
