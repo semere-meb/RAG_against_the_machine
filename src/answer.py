@@ -1,5 +1,4 @@
 from pathlib import Path
-from string import Template
 
 import torch
 from pydantic import ValidationError
@@ -16,6 +15,14 @@ from src.models import (
 from src.searcher import Searcher
 
 TOP_SOURCES_COUNT = 3
+SYSTEM_PROMPT = (
+    "You answer questions about the vLLM codebase using only the "
+    "provided sources. Quote names, commands, parameters and values "
+    "exactly as they appear. Answer concisely. Include the exact command "
+    "or code from the sources when the question asks how to do something. "
+    "If the question is not about vLLM or software, reply exactly: "
+    '"The provided sources do not contain this information."'
+)
 
 
 class AnswerError(Exception):
@@ -32,16 +39,12 @@ class Answerer:
             device_map="auto",
         )
 
-        self.template = Template(
-            """"
-            Answer the following QUESTION using only the CONTEXT below..
-
-            QUESTION: $query
-
-            CONTEXT: $context
-            
-        """
-        )
+    def build_prompt(self, query: str, sources: list[tuple[str, str]]) -> str:
+        blocks = [
+            f"--- Source {i}: {path} ---\n{text.strip()}"
+            for i, (path, text) in enumerate(sources, 1)
+        ]
+        return "\n\n".join(blocks) + f"\n\nQuestion: {query}\nAnswer:"
 
     def generate(self, query: str, sources: list[MinimalSource]) -> str:
         context = []
@@ -51,13 +54,11 @@ class Answerer:
                 text = f.read()[
                     source.first_character_index : source.last_character_index
                 ]
-                context.append(text)
-
-        prompt = self.template.substitute(query=query, context=context)
+                context.append((source.file_path, text))
 
         messages = [
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt},
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": self.build_prompt(query, context)},
         ]
 
         if not self.tokenizer:
