@@ -31,7 +31,7 @@ class CLI:
             print(f"{source.file_path}", end=" ")
             print(source.first_character_index, end="")
             print(":", end="")
-            print(source.last_character_index, end="")
+            print(source.last_character_index)
 
     def search_dataset(
         self, dataset_path: str, k: int, save_directory: str
@@ -48,6 +48,7 @@ class CLI:
             print("k has to be a valid int type and at least 1.")
             exit(1)
         print(">>> Answering")
+        query = str(query)
         answerer = Answerer()
         result = answerer.answer(query, k)
         print(result.answer)

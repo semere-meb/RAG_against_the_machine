@@ -47,6 +47,9 @@ class Answerer:
         return "\n\n".join(blocks) + f"\n\nQuestion: {query}\nAnswer:"
 
     def generate(self, query: str, sources: list[MinimalSource]) -> str:
+        if not sources:
+            return "The provided sources do not contain this information."
+
         context = []
 
         for source in sources[:TOP_SOURCES_COUNT]:
@@ -86,7 +89,7 @@ class Answerer:
             do_sample=False,
         )  # ty: ignore[invalid-argument-type]
 
-        new_tokens = output[0][slice(inputs.input_ids.shape[1])]
+        new_tokens = output[0][slice(inputs.input_ids.shape[1], None)]
         llm_answer = self.tokenizer.decode(
             new_tokens, skip_special_tokens=True
         )
