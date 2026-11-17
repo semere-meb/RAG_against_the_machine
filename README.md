@@ -117,7 +117,7 @@ Every command is run as `uv run python -m src <command> [options]`; all paths ar
 
 | Command | Options | Output |
 |---|---|---|
-| `index` | `--max_chunk_size` (1–2000, default 2000) | index in `data/processed/` |
+| `index` | `--max_chunk_size` (100–2000, default 2000) | index in `data/processed/` |
 | `search <query>` | `--k` | top-k sources, printed |
 | `search_dataset` | `--dataset_path`, `--k`, `--save_directory` | `StudentSearchResults` JSON |
 | `answer <query>` | `--k` | answer, printed |
@@ -312,7 +312,7 @@ flowchart LR
 - **Exact offsets**: each chunk keeps its start index from the splitter, and an
   assertion checks `content[start:end] == chunk`, so `first_character_index` /
   `last_character_index` always point at the right text.
-- **Size limit**: `--max_chunk_size` is validated (1–2000), so no source can
+- **Size limit**: `--max_chunk_size` is validated (100–2000), so no source can
   exceed the moulinette's 2000-character `max_context_length`.
 
 ---
@@ -442,6 +442,8 @@ Measured with the real CLI (`index --max_chunk_size N`, then `search_dataset --k
 
 | `max_chunk_size` | chunks | index time | docs R@1 | docs R@5 | docs R@10 | code R@1 | code R@5 | code R@10 |
 |---|---|---|---|---|---|---|---|---|
+| 50 | — | 129 s | — | 0.31 | 0.33 | — | — | — |
+| 100 | 205,703 | 51 s | 0.38 | 0.59 | 0.65 | 0.46 | 0.76 | 0.82 |
 | 500 | 41,539 | 28 s | 0.59 | 0.86 | 0.91 | 0.57 | 0.87 | 0.93 |
 | 1000 | 20,616 | 25 s | 0.69 | 0.91 | 0.94 | 0.54 | 0.83 | 0.93 |
 | 1500 | 13,456 | 26 s | 0.69 | 0.89 | 0.93 | 0.60 | 0.86 | 0.93 |
@@ -451,6 +453,9 @@ Measured with the real CLI (`index --max_chunk_size N`, then `search_dataset --k
 - **Small chunks hurt recall@1 and @5 on docs**: at 500 characters a section is
   spread over several chunks, each with fewer matching words, and the reference
   span (median ~1,100 characters) covers several of them.
+- **Very small chunks collapse recall and slow indexing**: below 100 characters
+  the chunk count explodes (50 already takes 129 s, 1 would blow the 5-minute
+  budget), so `--max_chunk_size` is limited to 100–2000.
 - **2000 is best overall at recall@5**, and also gives the model the most
   context per source, so it is the default.
 

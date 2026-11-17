@@ -98,6 +98,11 @@ class Evaluator:
             if isinstance(q, AnsweredQuestion) and q.sources
         }
 
+        if not d_results:
+            raise EvaluationError(
+                f"{dataset_path} has no questions with reference sources"
+            )
+
         ks = [_k for _k in (1, 3, 5, 10) if _k <= k]
         totals = {_k: 0.0 for _k in ks}
 

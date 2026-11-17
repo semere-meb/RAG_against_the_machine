@@ -77,14 +77,23 @@ class Answerer:
         context = []
 
         for source in sources[:TOP_SOURCES_COUNT]:
-            with open(source.file_path) as f:
-                text = f.read()[
-                    slice(
-                        source.first_character_index,
-                        source.last_character_index,
-                    )
-                ]
-                context.append((source.file_path, text))
+            try:
+                with open(
+                    source.file_path, encoding="utf-8", newline=""
+                ) as f:
+                    text = f.read()[
+                        slice(
+                            source.first_character_index,
+                            source.last_character_index,
+                        )
+                    ]
+            except (OSError, UnicodeDecodeError):
+                print(f"Warning: couldn't read {source.file_path}, skipped.")
+                continue
+            context.append((source.file_path, text))
+
+        if not context:
+            return "The provided sources do not contain this information."
 
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
