@@ -29,9 +29,9 @@ class CLI:
 
         for source in result.retrieved_sources:
             print(f"{source.file_path}", end=" ")
-            print(
-                f"[{source.first_character_index}:{source.last_character_index}]"
-            )
+            print(source.first_character_index, end="")
+            print(":", end="")
+            print(source.last_character_index, end="")
 
     def search_dataset(
         self, dataset_path: str, k: int, save_directory: str

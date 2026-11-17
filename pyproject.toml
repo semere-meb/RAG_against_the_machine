@@ -53,5 +53,5 @@ exclude = [
 ]
 
 [[tool.mypy.overrides]]
-module = ["fire", "Stemmer"]
+module = ["fire", "Stemmer", "bm25q", "bm25q.*", "tqdm", "tqdm.*"]
 ignore_missing_imports = true

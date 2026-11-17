@@ -52,7 +52,10 @@ class Answerer:
         for source in sources[:TOP_SOURCES_COUNT]:
             with open(source.file_path) as f:
                 text = f.read()[
-                    source.first_character_index : source.last_character_index
+                    slice(
+                        source.first_character_index,
+                        source.last_character_index,
+                    )
                 ]
                 context.append((source.file_path, text))
 
@@ -64,27 +67,26 @@ class Answerer:
         if not self.tokenizer:
             raise AnswerError("Error loading tokenizer.")
 
-        text = self.tokenizer.apply_chat_template(
+        chat = self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
             add_generation_prompt=True,
             enable_thinking=False,
         )
+        if not isinstance(chat, str):
+            raise AnswerError("Chat template did not produce a string.")
 
-        inputs = self.tokenizer([text], return_tensors="pt").to(
+        inputs = self.tokenizer([chat], return_tensors="pt").to(
             self.model.device
         )
 
-        output = self.model.generate(
+        output = self.model.generate(  # type: ignore[misc]
             **inputs,
             max_new_tokens=512,
             do_sample=False,
-            # temperature=0.7,
-            # top_p=0.8,
-            # top_k=20,
         )  # ty: ignore[invalid-argument-type]
 
-        new_tokens = output[0][inputs.input_ids.shape[1] :]
+        new_tokens = output[0][slice(inputs.input_ids.shape[1])]
         llm_answer = self.tokenizer.decode(
             new_tokens, skip_special_tokens=True
         )

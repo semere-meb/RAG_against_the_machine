@@ -1,5 +1,5 @@
 SYNC := .synced
-MYPY_FLAGS := "--warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs"
+MYPY_FLAGS := --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 install: $(SYNC)
 
@@ -10,7 +10,7 @@ $(SYNC): pyproject.toml
 	fi
 	uv sync
 	@if ! [ -d data/raw/vllm-0.10.1 ];then \
-		git clone --depth 1 --branch v0.10.1 https://github.com/vllm-project/vllm.git data/raw/vllm-0.10.1; \
+		uv run python -m zipfile -e vllm-0.10.1.zip data/raw; \
 	fi
 	@touch $(SYNC)
 
@@ -34,7 +34,7 @@ evaluate-priv: install
 	uv run python -m src evaluate ./_searched/dataset_code_private.json ./_private/AnsweredQuestions/dataset_code_private.json
 	
 
-run: index
+run: index search
 	
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
@@ -49,9 +49,11 @@ fclean: clean
 
 lint: $(SYNC)
 	uv run flake8 .
-	uv run mypy --strict .
+	uv run mypy $(MYPY_FLAGS) .
 
 lint-strict: $(SYNC)
+	uv run flake8 .
+	uv run mypy --strict .
 	ruff check .
 	ty check .
 
@@ -68,4 +70,4 @@ test: $(SYNC)
 re: clean run install
 
 	
-.PHONY: run install clean fclean lint lint-strict test format re
+.PHONY: run install clean fclean lint lint-strict test format re index search search-priv evaluate evaluate-priv debug
