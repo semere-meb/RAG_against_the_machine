@@ -30,6 +30,8 @@ class Searcher:
         self.retriever = self.load()
 
         query_tokens = self.tokenizer.tokenize(query)
+        if not query_tokens:
+            return MinimalSearchResults(question=query, retrieved_sources=[])
         docs, _scores = self.retriever.retrieve([query_tokens], k=k)
         sources = [MinimalSource.model_validate(d) for d in docs[0]]
 

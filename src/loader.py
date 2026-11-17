@@ -10,8 +10,8 @@ DIRS = {
         "dirs": ["vllm"],
     },
     "prose": {
-        "extensions": ["md"],
-        "dirs": ["", "docs"],
+        "extensions": ["md", "txt"],
+        "dirs": [""],
     },
 }
 EXCLUDED_DIRS: set[str] = {
@@ -83,7 +83,6 @@ class Loader:
             if not path.is_file():
                 continue
             if EXCLUDED_DIRS.intersection(path.parts):
-                print(path)
                 continue
 
             filtered_paths.append(path)

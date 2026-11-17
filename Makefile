@@ -17,9 +17,21 @@ $(SYNC): pyproject.toml
 index: install
 	uv run python -m src index
 
+search: install
+	uv run python -m src search_dataset ./data/datasets/UnansweredQuestions/dataset_docs_public.json 10 _searched
+	uv run python -m src search_dataset ./data/datasets/UnansweredQuestions/dataset_code_public.json 10 _searched
+
+search-priv: install
+	uv run python -m src search_dataset ./_private/UnansweredQuestions/dataset_docs_private.json 10 _searched
+	uv run python -m src search_dataset ./_private/UnansweredQuestions/dataset_code_private.json 10 _searched
+
 evaluate: install
-	uv run python -m src evaluate _answered/dataset_code_public.json data/datasets/AnsweredQuestions/dataset_code_public.json
-	uv run python -m src evaluate _answered/dataset_docs_public.json data/datasets/AnsweredQuestions/dataset_docs_public.json
+	uv run python -m src evaluate ./_searched/dataset_docs_public.json data/datasets/AnsweredQuestions/dataset_docs_public.json
+	uv run python -m src evaluate ./_searched/dataset_code_public.json data/datasets/AnsweredQuestions/dataset_code_public.json
+
+evaluate-priv: install
+	uv run python -m src evaluate ./_searched/dataset_docs_private.json ./_private/AnsweredQuestions/dataset_docs_private.json
+	uv run python -m src evaluate ./_searched/dataset_code_private.json ./_private/AnsweredQuestions/dataset_code_private.json
 	
 
 run: index
