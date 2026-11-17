@@ -5,7 +5,14 @@ from src.searcher import Searcher
 
 
 class CLI:
+    """Command-line interface of the RAG pipeline, exposed through Fire."""
+
     def index(self, max_chunk_size: int = 2000) -> None:
+        """Chunk the corpus in data/raw/ and save the index.
+
+        Args:
+            max_chunk_size: Maximum chunk length in characters (1-2000).
+        """
         print(">>> Indexing")
         if (
             type(max_chunk_size) is not int
@@ -18,6 +25,12 @@ class CLI:
         indexer.save(max_chunk_size)
 
     def search(self, query: str, k: int) -> None:
+        """Print the top-k source locations for a single query.
+
+        Args:
+            query: The question to search for.
+            k: Number of sources to return.
+        """
         if type(k) is not int or k <= 0:
             print("k has to be a valid int type and at least 1.")
             exit(1)
@@ -36,6 +49,13 @@ class CLI:
     def search_dataset(
         self, dataset_path: str, k: int, save_directory: str
     ) -> None:
+        """Search every question of a dataset and save the results.
+
+        Args:
+            dataset_path: Path to the questions JSON file.
+            k: Number of sources per question.
+            save_directory: Directory to write the search results to.
+        """
         if type(k) is not int or k <= 0:
             print("k has to be a valid int type and at least 1.")
             exit(1)
@@ -44,6 +64,12 @@ class CLI:
         searcher.search_dataset(dataset_path, k, save_directory)
 
     def answer(self, query: str, k: int) -> None:
+        """Print an answer to a single query, generated from its sources.
+
+        Args:
+            query: The question to answer.
+            k: Number of sources to retrieve.
+        """
         if type(k) is not int or k <= 0:
             print("k has to be a valid int type and at least 1.")
             exit(1)
@@ -56,6 +82,12 @@ class CLI:
     def answer_dataset(
         self, student_search_results_path: str, save_directory: str
     ) -> None:
+        """Generate answers for saved search results and save them.
+
+        Args:
+            student_search_results_path: Path to the search results JSON.
+            save_directory: Directory to write the answers to.
+        """
         print(">>> answering using the dataset")
         answerer = Answerer()
         answerer.answer_dataset(student_search_results_path, save_directory)
@@ -65,6 +97,12 @@ class CLI:
         student_search_results_path: str,
         dataset_path: str,
     ) -> None:
+        """Print recall@k of search results against a ground truth.
+
+        Args:
+            student_search_results_path: Path to the search results JSON.
+            dataset_path: Path to the answered questions JSON.
+        """
         print(">>> Evaluating")
         evaluator = Evaluator()
         res = evaluator.evaluate(student_search_results_path, dataset_path)

@@ -5,9 +5,7 @@ from pydantic import BaseModel, Field
 
 
 class MinimalSource(BaseModel):
-    """
-    represents a single source of information.
-    """
+    """A character range in a corpus file."""
 
     file_path: str
     first_character_index: int
@@ -15,35 +13,27 @@ class MinimalSource(BaseModel):
 
 
 class UnansweredQuestion(BaseModel):
-    """
-    represent an unanswered question
-    """
+    """A question, identified by a unique id."""
 
     question_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     question: str
 
 
 class AnsweredQuestion(UnansweredQuestion):
-    """
-    represent an answered question
-    """
+    """A question with its reference sources and answer."""
 
     sources: List[MinimalSource]
     answer: str
 
 
 class RagDataset(BaseModel):
-    """
-    represents a dataset of RAG questions
-    """
+    """A dataset of answered or unanswered questions."""
 
     rag_questions: List[AnsweredQuestion | UnansweredQuestion]
 
 
 class MinimalSearchResults(BaseModel):
-    """
-    represent the search results
-    """
+    """The sources retrieved for one question."""
 
     question_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     question: str
@@ -51,32 +41,28 @@ class MinimalSearchResults(BaseModel):
 
 
 class MinimalAnswer(MinimalSearchResults):
-    """
-    represent the search answer
-    """
+    """The sources retrieved for one question, with the generated answer."""
 
     answer: str
 
 
 class StudentSearchResults(BaseModel):
-    """
-    represent search results
-    """
+    """Search results for a whole dataset, with the k used."""
 
     search_results: List[MinimalSearchResults]
     k: int
 
 
 class StudentSearchResultsAndAnswer(BaseModel):
-    """
-    represent search results with answers
-    """
+    """Search results and answers for a whole dataset, with the k used."""
 
     search_results: List[MinimalAnswer]
     k: int
 
 
 class Chunk(BaseModel):
+    """A piece of a corpus file, with its text and character range."""
+
     file_path: str
     text: str
     first_character_index: int

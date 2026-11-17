@@ -26,11 +26,14 @@ SYSTEM_PROMPT = (
 
 
 class AnswerError(Exception):
-    """"""
+    """Raised when answers cannot be generated, read or saved."""
 
 
 class Answerer:
+    """Generates answers from retrieved sources with Qwen3-0.6B."""
+
     def __init__(self) -> None:
+        """Load the model, in float32 on CPU for speed."""
         model_name = "Qwen/Qwen3-0.6B"
         self.tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-0.6B")
         self.model = AutoModelForCausalLM.from_pretrained(
@@ -40,6 +43,15 @@ class Answerer:
         )
 
     def build_prompt(self, query: str, sources: list[tuple[str, str]]) -> str:
+        """Build the user message: labelled sources, then the question.
+
+        Args:
+            query: The question.
+            sources: (file path, text) pairs.
+
+        Returns:
+            The prompt text.
+        """
         blocks = [
             f"--- Source {i}: {path} ---\n{text.strip()}"
             for i, (path, text) in enumerate(sources, 1)
@@ -47,6 +59,18 @@ class Answerer:
         return "\n\n".join(blocks) + f"\n\nQuestion: {query}\nAnswer:"
 
     def generate(self, query: str, sources: list[MinimalSource]) -> str:
+        """Answer a question from the first TOP_SOURCES_COUNT sources.
+
+        Args:
+            query: The question.
+            sources: Ranked sources for the question.
+
+        Returns:
+            The answer, or a refusal when there are no sources.
+
+        Raises:
+            AnswerError: If the chat prompt cannot be built.
+        """
         if not sources:
             return "The provided sources do not contain this information."
 
@@ -96,6 +120,15 @@ class Answerer:
         return str(llm_answer)
 
     def answer(self, query: str, k: int) -> MinimalAnswer:
+        """Search for a query, then answer it from the results.
+
+        Args:
+            query: The question.
+            k: Number of sources to retrieve.
+
+        Returns:
+            The sources and the answer.
+        """
         result = Searcher().search(query, k)
         return MinimalAnswer(
             question=result.question,
@@ -107,6 +140,20 @@ class Answerer:
     def answer_dataset(
         self, student_search_results_path: str, save_directory: str
     ) -> StudentSearchResultsAndAnswer:
+        """Answer each saved search result from its own sources and save.
+
+        The output file has the same name as the input file.
+
+        Args:
+            student_search_results_path: Path to the search results JSON.
+            save_directory: Directory to write the answers to.
+
+        Returns:
+            The search results with answers.
+
+        Raises:
+            AnswerError: If the input cannot be read or the output saved.
+        """
         input_path = Path(student_search_results_path)
         try:
             with open(input_path) as f:

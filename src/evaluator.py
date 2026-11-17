@@ -15,10 +15,22 @@ IOU_TRESHOLD = 0.05
 
 
 class EvaluationError(Exception):
-    """"""
+    """Raised when an input file cannot be read."""
 
 
 def load(path: str, model: type[Model]) -> Model:
+    """Read a JSON file and validate it against a pydantic model.
+
+    Args:
+        path: Path to the JSON file.
+        model: The model class to validate against.
+
+    Returns:
+        The validated model instance.
+
+    Raises:
+        EvaluationError: If the file cannot be read or is invalid.
+    """
     try:
         with open(path) as f:
             raw = f.read()
@@ -28,7 +40,18 @@ def load(path: str, model: type[Model]) -> Model:
 
 
 class Evaluator:
+    """Computes recall@k of search results against a ground truth."""
+
     def IoU(self, a: MinimalSource, b: MinimalSource) -> float:
+        """Intersection over union of two character ranges.
+
+        Args:
+            a: First source.
+            b: Second source.
+
+        Returns:
+            The overlap ratio, from 0 to 1; file paths are not compared.
+        """
         i_start = max(a.first_character_index, b.first_character_index)
         i_end = min(a.last_character_index, b.last_character_index)
         intersection = max(0, i_end - i_start)
@@ -45,6 +68,21 @@ class Evaluator:
         student_search_results_path: str,
         dataset_path: str,
     ) -> dict[int, float]:
+        """Compute recall at k = 1, 3, 5 and 10, up to the results' k.
+
+        A reference source counts as found when a result in the same file
+        overlaps it with an IoU of at least IOU_TRESHOLD.
+
+        Args:
+            student_search_results_path: Path to the search results JSON.
+            dataset_path: Path to the answered questions JSON.
+
+        Returns:
+            Recall for each k.
+
+        Raises:
+            EvaluationError: If either file cannot be read.
+        """
         s_dataset = load(student_search_results_path, StudentSearchResults)
         k = s_dataset.k
         s_results = {

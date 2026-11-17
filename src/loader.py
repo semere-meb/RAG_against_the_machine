@@ -34,21 +34,28 @@ EXCLUDED_DIRS: set[str] = {
 
 
 class LoadError(Exception):
-    """
-    An Error during intake.
-    """
+    """Raised when the corpus cannot be loaded."""
 
 
 class File(BaseModel):
+    """A corpus file with its content and suffix."""
+
     path: Path
     content: str
     suffix: str
 
 
 class Loader:
+    """Collects and reads the corpus files to index."""
+
     def get_all_paths(self) -> list[Path]:
-        """
-        Walks through the entire repo and returns paths of files.
+        """List the corpus paths matching the configured extensions.
+
+        Returns:
+            Paths found under RAW_DIR, including excluded ones.
+
+        Raises:
+            LoadError: If RAW_DIR does not exist.
         """
         raw_dir: Path = Path(RAW_DIR)
 
@@ -74,8 +81,13 @@ class Loader:
         return paths
 
     def filter_sort_paths(self, paths: list[Path]) -> list[Path]:
-        """
-        filters excluded files.
+        """Drop non-files and paths inside excluded directories.
+
+        Args:
+            paths: Candidate paths.
+
+        Returns:
+            The paths to index.
         """
         filtered_paths = []
 
@@ -91,8 +103,13 @@ class Loader:
         return filtered_paths
 
     def build_file_list(self, paths: list[Path]) -> list[File]:
-        """
-        builds a list of read files with their content and type.
+        """Read each path, skipping files that cannot be read.
+
+        Args:
+            paths: Paths to read.
+
+        Returns:
+            The files read successfully.
         """
         files = []
 
@@ -109,6 +126,11 @@ class Loader:
         return files
 
     def load(self) -> list[File]:
+        """Collect, filter and read the corpus files.
+
+        Returns:
+            The files to index.
+        """
         paths = self.get_all_paths()
         filter_paths = self.filter_sort_paths(paths)
         files = self.build_file_list(filter_paths)

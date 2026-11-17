@@ -10,10 +10,21 @@ PATH_WEIGHT: int = 2
 
 
 class Indexer:
+    """Builds the BM25 index of the corpus."""
+
     def __init__(self) -> None:
+        """Create the indexer with its tokenizer."""
         self.tokenizer = Tokenizer()
 
     def save(self, max_chunk_size: int) -> None:
+        """Load, chunk and index the corpus, saving it to data/processed.
+
+        Each chunk is prefixed with its file path, repeated PATH_WEIGHT
+        times, so path words weigh more in the ranking.
+
+        Args:
+            max_chunk_size: Maximum chunk length in characters.
+        """
         files = Loader().load()
         chunks = Chunker(max_chunk_size).chunk(files)
 

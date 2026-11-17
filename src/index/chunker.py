@@ -8,7 +8,14 @@ from src.models import Chunk
 
 
 class Chunker:
+    """Splits files into chunks, with a strategy per file type."""
+
     def __init__(self, max_chunk_size: int = 2000) -> None:
+        """Build the Python, Markdown and plain-text splitters.
+
+        Args:
+            max_chunk_size: Maximum chunk length in characters.
+        """
         self.max_chunk_size = max_chunk_size
         self.text_separators: list[str] = [
             r"\n[ \t]*\n",
@@ -40,6 +47,14 @@ class Chunker:
         )
 
     def chunk_file(self, file: File) -> list[Chunk]:
+        """Split one file with the splitter matching its suffix.
+
+        Args:
+            file: The file to split.
+
+        Returns:
+            The chunks, with their character ranges in the file.
+        """
         text = file.content
         if not text:
             return []
@@ -73,6 +88,14 @@ class Chunker:
         return chunks
 
     def chunk(self, files: list[File]) -> list[Chunk]:
+        """Split all files.
+
+        Args:
+            files: The files to split.
+
+        Returns:
+            The chunks of every file, in order.
+        """
         chunks: list[Chunk] = []
 
         for file in files:

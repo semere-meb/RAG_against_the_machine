@@ -14,13 +14,32 @@ STOPWORDS: frozenset[str] = frozenset(
 
 
 class Tokenizer:
+    """Turns text and code into tokens for BM25."""
+
     def __init__(self, lowercase: bool = True, stem: bool = True) -> None:
+        """Configure the tokenizer.
+
+        Args:
+            lowercase: Whether to lowercase tokens.
+            stem: Whether to apply English stemming.
+        """
         self.lowercase = lowercase
         self.stemmer: Stemmer.Stemmer | None = (
             Stemmer.Stemmer("english") if stem else None
         )
 
     def _split_identifier(self, identifier: str) -> list[str]:
+        """Split an identifier into its parts, keeping the whole as well.
+
+        For example, "load_lora_adapter" gives "load_lora_adapter",
+        "load", "lora" and "adapter".
+
+        Args:
+            identifier: A word or code identifier.
+
+        Returns:
+            The unique tokens; single characters are dropped.
+        """
         clean_id = identifier.strip("-_./\\")
         if not clean_id:
             return []
@@ -48,6 +67,14 @@ class Tokenizer:
         return list(tokens)
 
     def tokenize(self, text: str) -> list[str]:
+        """Tokenize text, dropping stopwords and stemming the rest.
+
+        Args:
+            text: Text or code to tokenize.
+
+        Returns:
+            The tokens, in order.
+        """
         if not text:
             return []
 

@@ -6,6 +6,7 @@ from src.cli import CLI
 
 
 def run() -> None:
+    """Run the CLI, reporting errors as messages instead of tracebacks."""
     try:
         fire.Fire(CLI)
     except KeyboardInterrupt:

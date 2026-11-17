@@ -15,18 +15,35 @@ from src.models import (
 
 
 class SearchError(Exception):
-    """"""
+    """Raised when a dataset cannot be read or results cannot be saved."""
 
 
 class Searcher:
+    """Retrieves the most relevant chunks for a question with BM25."""
+
     def __init__(self) -> None:
+        """Create the searcher; the index is loaded on search."""
         self.retriever: BM25 | None = None
         self.tokenizer = Tokenizer()
 
     def load(self) -> BM25:
+        """Load the index and chunk metadata from data/processed.
+
+        Returns:
+            The BM25 retriever.
+        """
         return BM25().load("data/processed", load_corpus=True)
 
     def search(self, query: str, k: int) -> MinimalSearchResults:
+        """Find the top-k chunks for a query.
+
+        Args:
+            query: The question to search for.
+            k: Number of sources to return, capped at the corpus size.
+
+        Returns:
+            The ranked sources; empty if the query has no usable tokens.
+        """
         self.retriever = self.load()
 
         query_tokens = self.tokenizer.tokenize(query)
@@ -41,6 +58,21 @@ class Searcher:
     def search_dataset(
         self, dataset_path: str, k: int, save_directory: str
     ) -> StudentSearchResults:
+        """Search every question of a dataset and save the results.
+
+        The output file has the same name as the input dataset.
+
+        Args:
+            dataset_path: Path to the questions JSON file.
+            k: Number of sources per question.
+            save_directory: Directory to write the results to.
+
+        Returns:
+            The search results.
+
+        Raises:
+            SearchError: If the dataset cannot be read or saved.
+        """
         input_path = Path(dataset_path)
         try:
             with open(input_path) as f:
